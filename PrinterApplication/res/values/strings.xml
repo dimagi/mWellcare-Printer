@@ -4,6 +4,9 @@
     <string name="app_name">PrinterApplication</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="generating_pdf">Generating pdf...</string>
+    <string name="generating_pdf">Generating pdf &#8230;</string>
+    <string name="printing_completed">Printing completed</string>
+    <string name="error_while_printing">There is an error while printing. Please try again</string>
+    <string name="printer_app_didnot_recieve_date">Data not received from CommCare ODK to print</string>
 
 </resources>

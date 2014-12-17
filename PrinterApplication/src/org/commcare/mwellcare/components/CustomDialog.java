@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Window;
+import android.widget.TextView;
 
 
 public class CustomDialog extends Dialog {
@@ -24,6 +25,10 @@ public class CustomDialog extends Dialog {
 		setContentView(R.layout.cutom_progress_bar);
 		setCancelable(false);
 	}
+	public void setText(String text) {
+	    ((TextView)findViewById(R.id.textView1)).setText(text);
+        
+    }
 	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {

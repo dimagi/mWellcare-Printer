@@ -3,7 +3,13 @@ package org.commcare.mwellcare.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.print.PrintAttributes;
+import android.print.PrintAttributes.Margins;
+import android.print.PrintAttributes.MediaSize;
+import android.print.PrintAttributes.Resolution;
+import android.print.PrinterCapabilitiesInfo;
 import android.print.PrinterId;
+import android.print.PrinterInfo;
 import android.printservice.PrintJob;
 import android.printservice.PrintService;
 import android.printservice.PrinterDiscoverySession;
@@ -66,38 +72,55 @@ public class CustomPrintService extends PrintService {
 
         @Override
         public void onStartPrinterDiscovery(List<PrinterId> priorityList) {
-            List<PrinterId> ddd = new ArrayList<PrinterId>();
-//            ddd.add(generatePrinterId("Printer 1"));
-//            removePrinters(ddd);
+            Log.d(TAG,"onStartPrinterDiscovery");
+//            List<PrinterId> printerIDS = new ArrayList<PrinterId>();
+//            for(int i =0;i<priorityList.size();i++){
+//                PrinterId printerID = priorityList.get(i);
+//                printerIDS.add(printerID);
+//                
+//            }
+//            removePrinters(printerIDS);
 //            
-//            PrinterCapabilitiesInfo capabilities =
-//                    new PrinterCapabilitiesInfo.Builder(generatePrinterId("Printer 1"))
-//            .addMediaSize(MediaSize.ISO_A1,true)
-//                .setColorModes(PrintAttributes.COLOR_MODE_COLOR
-//                        | PrintAttributes.COLOR_MODE_MONOCHROME,
-//                        PrintAttributes.COLOR_MODE_COLOR)
-//                        .addResolution(new Resolution("R1", "sdfsdf", 600, 600), true)
-//                                .setMinMargins(new Margins(50, 50, 50, 50))
-//                                        .build();
-//            
-//            PrinterInfo mFirstFakePrinter = new PrinterInfo.Builder(generatePrinterId("Printer 1"),
-//                    "SHGH-21344", PrinterInfo.STATUS_IDLE)
-//            .setCapabilities(capabilities).
-//            build();
-//            
-//            List<PrinterInfo> dd = new ArrayList<PrinterInfo>();
-//            dd.add(mFirstFakePrinter);
-//            addPrinters(dd);
-//            Log.d(TAG,"onStartPrinterDiscovery");
+//            List<PrinterInfo> printerInfoList=  getPrinterList(priorityList);
+//            addPrinters(printerInfoList);
+            
 
+        }
+
+        private List<PrinterInfo> getPrinterList(List<PrinterId> priorityList) {
+            List<PrinterInfo> printersInfoList = new ArrayList<PrinterInfo>();
+            
+            for(int i =0;i<priorityList.size();i++){
+                PrinterId printerID = priorityList.get(i);
+                PrinterCapabilitiesInfo capabilities =
+                        new PrinterCapabilitiesInfo.Builder(printerID)
+                .addMediaSize(MediaSize.ISO_A1,true)
+                    .setColorModes(PrintAttributes.COLOR_MODE_COLOR
+                            | PrintAttributes.COLOR_MODE_MONOCHROME,
+                            PrintAttributes.COLOR_MODE_COLOR)
+                            .addResolution(new Resolution("R1", "sdfsdf", 600, 600), true)
+                                    .setMinMargins(new Margins(50, 50, 50, 50))
+                                            .build();
+                
+                PrinterInfo mFirstFakePrinter = new PrinterInfo.Builder(printerID,
+                        "ABC"+i, PrinterInfo.STATUS_IDLE)
+                .setCapabilities(capabilities).
+                build();
+                
+               
+                printersInfoList.add(mFirstFakePrinter);
+            }
+            
+           
+            return printersInfoList;
         }
 
         @Override
         public void onDestroy() {
             Log.d(TAG,"onDestroy");
-            List<PrinterId> dd = new ArrayList<PrinterId>();
-            dd.add(generatePrinterId("Printer 1"));
-            removePrinters(dd);
+//            List<PrinterId> dd = new ArrayList<PrinterId>();
+//            dd.add(generatePrinterId("Printer 1"));
+//            removePrinters(dd);
 
         }
     };
