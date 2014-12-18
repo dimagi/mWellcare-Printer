@@ -37,8 +37,9 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
    
     private Activity mActivity ;
     private final String TAG = this.getClass().getName();
-    private final String ODK_INTENT_DATA = "odk_intent_data";
+    public static final String ODK_INTENT_DATA = "odk_intent_data";
     private CustomDialog mDialog;
+    private CustomTimerTask mTimerTask;
     
     public PdfPrintDocumentAdapter(Activity activity) {
         this.mActivity = activity;
@@ -78,7 +79,6 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
     @Override
     public void onWrite(PageRange[] pageRanges, ParcelFileDescriptor destination,
             CancellationSignal cancellationSignal, WriteResultCallback callback) {
-        
         InputStream input = null;
         OutputStream output = null;
 
@@ -118,29 +118,26 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
     @Override
     public void onFinish() {
         super.onFinish();
-        mDialog.show();
         PrintManager printManager = (PrintManager) mActivity
                 .getSystemService(Context.PRINT_SERVICE);
         List<PrintJob> printJobs = printManager.getPrintJobs();
-        String patientID = mActivity.getIntent().getExtras().getString(Constants.PATIENT_ID);
+        
         if(Constants.LOG)Log.d(TAG,"Total Jobs::"+printJobs.size());
+        String PatientID = mActivity.getIntent().getExtras().getString(Constants.PATIENT_ID);
         for(int i = 0;i<printJobs.size();i++){
             PrintJob job = printJobs.get(i);
-            Timer t = new Timer();
-            t.scheduleAtFixedRate(new CustomTimerTask(job), 0, 5000);
-            /*if(patientID!=null && job.getInfo().getLabel().equals(patientID) ){
-                Intent intent = new Intent();
-                mActivity.setResult(Activity.RESULT_OK, intent);
-                if(job.isCompleted()){
-                    intent.putExtra(ODK_INTENT_DATA, true);
-//                    Toast.makeText(mActivity, R.string.printing_completed, Toast.LENGTH_SHORT).show();
-                }else {
-                    intent.putExtra(ODK_INTENT_DATA, false);
-//                    Toast.makeText(mActivity, R.string.error_while_printing, Toast.LENGTH_SHORT).show();
+            if(job.getInfo().getLabel().equals(PatientID)){
+                if(!job.isCompleted()){
+//                    Toast.makeText(mActivity, i+"::"+job.isQueued(), Toast.LENGTH_SHORT).show();
+                    if(!mDialog.isShowing())
+                        mDialog.show();
+                    Timer t = new Timer();
+                    mTimerTask = new CustomTimerTask(job);
+                    t.scheduleAtFixedRate(mTimerTask, 0, 2000);
+                }else{
+                    job.cancel();
                 }
-//                mActivity.finish();
-                break;
-            }*/
+            }
         }
     }
     private class CustomTimerTask extends TimerTask{
@@ -155,26 +152,68 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
                 @Override
                 public void run() {
                     if(job.isQueued()){
-                        mDialog.setText("PrintJob Queued...");
+                        if(!mDialog.isShowing())
+                            mDialog.show();
+                        mDialog.setText(job.getInfo().getLabel()+"PrintJob Queued...");
+//                        Toast.makeText(mActivity, job.getInfo().getLabel()+" PrintJob Queued...", Toast.LENGTH_SHORT).show();
                     }else if(job.isStarted()){
-                        mDialog.setText("PrintJob Started...");
+                        if(!mDialog.isShowing())
+                            mDialog.show();
+                        mDialog.setText(job.getInfo().getLabel()+"PrintJob Started...");
+//                        Toast.makeText(mActivity, job.getInfo().getLabel()+" PrintJob Started...", Toast.LENGTH_SHORT).show();
+                    }else if(job.isBlocked()){
+                      mDialog.setText(job.getInfo().getLabel()+"PrintJob Blocked and restarting...");
+//                      Toast.makeText(mActivity, job.getInfo().getLabel()+" PrintJob Blocked and restarting...", Toast.LENGTH_SHORT).show();
+                      job.restart();
+                    }else if(job.isFailed()){
+                        mDialog.setText(job.getInfo().getLabel()+"PrintJob failed and restarting...");
+//                        Toast.makeText(mActivity, job.getInfo().getLabel()+" PrintJob failed and restarting...", Toast.LENGTH_SHORT).show();
+                        job.restart();
                     }else if(job.isCompleted()){
-                        mDialog.setText("PrintJob Completed...");
+                        job.cancel();
+//                        mDialog.setText("PrintJob Completed...");
                         Toast.makeText(mActivity, job.getInfo().getLabel()+" Priting Completed", Toast.LENGTH_SHORT).show();
                         CustomTimerTask.this.cancel();
+                        
                         Intent intent = new Intent();
                         mActivity.setResult(Activity.RESULT_OK, intent);
                         intent.putExtra(ODK_INTENT_DATA, true);
                         if(mDialog.isShowing())    
                             mDialog.dismiss();
                         mActivity.finish();
-                    }
-                    
+                    }/*else if(mDialog.getDialogText().equals("")){
+                        CustomTimerTask.this.cancel();
+                        Intent intent = new Intent();
+                        mActivity.setResult(Activity.RESULT_OK, intent);
+                        intent.putExtra(ODK_INTENT_DATA, false);
+                        if(mDialog.isShowing())    
+                            mDialog.dismiss();
+                        mActivity.finish();
+                    }*/
                 }
             });
-            
+        }
+    }
+    /**
+     * This cancels the all print jobs currently irrespective of 
+     * their status
+     */
+    public void cancelTimer() {
+        if(mTimerTask!=null){
+            mTimerTask.cancel();
+            if(mDialog.isShowing())    
+                mDialog.dismiss();
+            PrintManager printManager = (PrintManager) mActivity
+                    .getSystemService(Context.PRINT_SERVICE);
+            List<PrintJob> printJobs = printManager.getPrintJobs();
+            String PatientID = mActivity.getIntent().getExtras().getString(Constants.PATIENT_ID);
+            for(int i = 0;i<printJobs.size();i++){
+                PrintJob job = printJobs.get(i);
+                if(!job.isCompleted()){
+                    job.cancel();
+                }
+            }
         }
         
     } 
-
 }

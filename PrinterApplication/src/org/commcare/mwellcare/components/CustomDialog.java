@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class CustomDialog extends Dialog {
@@ -29,10 +30,13 @@ public class CustomDialog extends Dialog {
 	    ((TextView)findViewById(R.id.textView1)).setText(text);
         
     }
+	public String getDialogText(){
+	    return ((TextView)findViewById(R.id.textView1)).getText().toString();
+	}
 	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-//		CustomDialog.this.dismiss();
+		CustomDialog.this.dismiss();
 		if( event.getKeyCode() == KeyEvent.KEYCODE_BACK )
 		{
 			return true;

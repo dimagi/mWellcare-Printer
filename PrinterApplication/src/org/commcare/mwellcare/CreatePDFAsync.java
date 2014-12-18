@@ -35,7 +35,8 @@ import com.itextpdf.text.pdf.PdfWriter;
 public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
     private Activity mActivity;
     private Bundle mBundle;
-    private Dialog mCustomDialog;
+    private CustomDialog mCustomDialog;
+    private PdfPrintDocumentAdapter mPdfAdapter;
     //This might be useful in future, if the font is changed to TIMES_ROMAN
 //    private static Font catFont = new Font(Font.FontFamily.TIMES_ROMAN, 18,
 //            Font.BOLD);
@@ -79,6 +80,8 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
         super.onPreExecute();
         mCustomDialog = new CustomDialog(mActivity);
         mCustomDialog.show();
+        mCustomDialog.setText(mActivity.getResources().getString(R.string.generating_pdf));
+        
     }
 
     @Override
@@ -101,9 +104,13 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
 
         // Start a print job, passing in a PrintDocumentAdapter implementation
         // to handle the generation of a print document
+        mPdfAdapter = new PdfPrintDocumentAdapter(mActivity);
         printManager.print(mBundle.getString(Constants.PATIENT_ID)!=null ? mBundle.getString(Constants.PATIENT_ID):jobName
-                , new PdfPrintDocumentAdapter(mActivity), null);
+                , mPdfAdapter, null);
         
+    }
+    public PdfPrintDocumentAdapter getmPdfAdapter() {
+        return mPdfAdapter;
     }
     /**
      * This method start creating PDF
