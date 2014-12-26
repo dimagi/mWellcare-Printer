@@ -6,13 +6,14 @@ import org.commcare.mwellcare.R;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
 public class CustomDialog extends Dialog {
+    private TextView mDialogTex;
 
 	public CustomDialog(Context context) {
 		super(context);
@@ -24,14 +25,16 @@ public class CustomDialog extends Dialog {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);  
 		setContentView(R.layout.cutom_progress_bar);
+		mDialogTex = (TextView)findViewById(R.id.dialog_text);
 		setCancelable(false);
 	}
 	public void setText(String text) {
-	    ((TextView)findViewById(R.id.textView1)).setText(text);
+	    if(mDialogTex!=null)
+	        mDialogTex.setText(text);
         
     }
 	public String getDialogText(){
-	    return ((TextView)findViewById(R.id.textView1)).getText().toString();
+	    return mDialogTex.getText().toString();
 	}
 	
 	@Override

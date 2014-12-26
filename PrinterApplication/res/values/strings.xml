@@ -8,5 +8,25 @@
     <string name="printing_completed">Printing completed</string>
     <string name="error_while_printing">There is an error while printing. Please try again</string>
     <string name="printer_app_didnot_recieve_date">Data not received from CommCare ODK to print</string>
-
+    <string name="not_configured_pdf_name">You have not configured PDF name. Please click the below button to configure.</string>
+    <string name="configure_pdf_name">Configure PDF name</string>
+    
+	<string name="pdf_path">Pdf path</string>
+	<string name="save">Save</string>
+	<string name="cancel">Cancel</string>
+	<string name="ok">OK</string>
+	<string name="alert">Alert</string>
+	
+	<string name="waiting_for_printer">"Waiting for printer connection&#8230;"</string>
+	<string name="printjob_queed">"PrintJob Queued&#8230;"</string>
+	<string name="printjob_started">"PrintJob Started&#8230;"</string>
+	<string name="printjob_blocked">"PrintJob Blocked and restarting&#8230;"</string>
+	<string name="printjob_fialed">"PrintJob failed and restarting&#8230;"</string>
+	<string name="printing_done">"Printing done successfully"</string>
+	<string name="problem_while_priting">"There is a problem while printing"</string>
+	<string name="please_enter_pdf_name">Please enter Pdf name</string>
+	<string name="pdf_configuration_path_is">PDF Configuration path is: </string>
+	<string name="if_you_want_change_pdf">If you want to change it, please click the below button</string>
+                           
+	
 </resources>

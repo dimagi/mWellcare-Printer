@@ -3,12 +3,14 @@ package org.commcare.mwellcare;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.commcare.mwellcare.components.CustomDialog;
 import org.commcare.mwellcare.projectconfigs.Constants;
+import org.commcare.mwellcare.util.Util;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -22,9 +24,12 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
 
 /**
@@ -68,10 +73,10 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
     }
     private void initFonts() {
         try {
-            font8Normal = new Font(BaseFont.createFont("assets/fonts/calibri.ttf", "UTF-8",BaseFont.EMBEDDED), 8,Font.NORMAL);
-            font8Bold = new Font(BaseFont.createFont("assets/fonts/calibrib.ttf", "UTF-8",BaseFont.EMBEDDED), 8,Font.BOLD);
-            font8BoldUnderline = new Font(BaseFont.createFont("assets/fonts/calibri.ttf", "UTF-8",BaseFont.EMBEDDED), 8,Font.BOLD|Font.UNDERLINE);
-            font8Italic = new Font(BaseFont.createFont("assets/fonts/calibrii.ttf", "UTF-8",BaseFont.EMBEDDED), 8,Font.ITALIC);
+            font8Normal = new Font(BaseFont.createFont("assets/fonts/calibri.ttf", "UTF-8",BaseFont.EMBEDDED), 10,Font.NORMAL);
+            font8Bold = new Font(BaseFont.createFont("assets/fonts/calibrib.ttf", "UTF-8",BaseFont.EMBEDDED), 10,Font.BOLD);
+            font8BoldUnderline = new Font(BaseFont.createFont("assets/fonts/calibri.ttf", "UTF-8",BaseFont.EMBEDDED),10,Font.BOLD|Font.UNDERLINE);
+            font8Italic = new Font(BaseFont.createFont("assets/fonts/calibrii.ttf", "UTF-8",BaseFont.EMBEDDED), 10,Font.ITALIC);
         } catch (Exception e) {
         }
     }
@@ -119,7 +124,11 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
         try {
             String path = getPDFConfigurePath();
             Document document = new Document();
-            PdfWriter.getInstance(document, new FileOutputStream(path));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(path));
+            HeaderFooter event = new HeaderFooter();
+            writer.setBoxSize("art", new Rectangle(36, 15, 559, 788));
+            writer.setPageEvent(event);
+            
             document.open();
             addPatientPersonalDetails(document);
             
@@ -137,23 +146,94 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
         }
         
     }
+    private class HeaderFooter extends PdfPageEventHelper {
+        /**
+         * Adds the header and the footer.
+         * @see com.itextpdf.text.pdf.PdfPageEventHelper#onEndPage(
+         *      com.itextpdf.text.pdf.PdfWriter, com.itextpdf.text.Document)
+         */
+        public void onEndPage(PdfWriter writer, Document document) {
+            Rectangle rect = writer.getBoxSize("art");
+            //header
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+            String currentDate = sdf.format(new Date());
+            ColumnText.showTextAligned(writer.getDirectContent(),
+                    Element.ALIGN_CENTER, new Phrase("CHC:Gownipalli", font8Normal),
+                    rect.getLeft()+32, rect.getTop()+25, 0);
+            ColumnText.showTextAligned(writer.getDirectContent(),
+                    Element.ALIGN_CENTER, new Phrase("Date:"+currentDate, font8Normal),
+                    rect.getLeft()+50, rect.getTop()+12, 0);
+            //Footer
+            ColumnText.showTextAligned(writer.getDirectContent(),
+                    Element.ALIGN_CENTER, new Phrase("www.mWellcare.org",font8Normal),
+                    (rect.getLeft() + rect.getRight()) / 2, rect.getBottom()-5, 0);
+        }
+    }
+    
     /**
      * This method gives the configuration path of PDF
      * @return
      */
     private String getPDFConfigurePath() {
-        File mWellDir = new File(Environment.getExternalStorageDirectory()+"/MWellCare");
-        if(!mWellDir.isDirectory())
-            mWellDir.mkdir();
-        File fileName = new File(mWellDir, mBundle.getString(Constants.PATIENT_ID)+"_"+
-                mBundle.getString(Constants.PATIENT_NAME)+".pdf");
-        if(!fileName.exists())
-            try {
-                fileName.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
+        String pdfPath = Util.getPdfNameFromSP(mActivity);
+        if(pdfPath == null){//default case
+            File mWellDir = new File(Environment.getExternalStorageDirectory()+"/MWellCare");
+            if(!mWellDir.isDirectory())
+                mWellDir.mkdir();
+            File fileName = new File(mWellDir, mBundle.getString(Constants.PATIENT_ID)+"_"+
+                    mBundle.getString(Constants.PATIENT_NAME)+".pdf");
+            if(!fileName.exists())
+                try {
+                    fileName.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            return fileName.toString();
+        }else{//create user configured path
+            
+            if(pdfPath.contains("/")){
+                //This will be useful if the file Name needs to add directory
+               /* String directoryName = pdfPath.substring(0, pdfPath.lastIndexOf("/")+1);
+                String fileNameString = pdfPath.substring( pdfPath.lastIndexOf("/")+1 ,pdfPath.length());
+                if(directoryName.length()>1){
+                    File directoryFile = new File(Environment.getExternalStorageDirectory()+directoryName);
+                    if(!directoryFile.isDirectory())
+                        directoryFile.mkdirs();
+                    File fileName = new File(directoryName, fileNameString);
+                    if(!fileName.exists())
+                        try {
+                            fileName.createNewFile();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    return fileName.toString();
+                }else{
+                    File fileName = new File(Environment.getExternalStorageDirectory()+fileNameString);
+                    if(!fileName.exists())
+                        try {
+                            fileName.createNewFile();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    return fileName.toString();
+                }*/
+                File mWellDir = new File(Environment.getExternalStorageDirectory()+"/MWellCare");
+                if(!mWellDir.isDirectory())
+                    mWellDir.mkdir();
+                File fileName = new File(mWellDir, pdfPath);
+                if(!fileName.exists())
+                    try {
+                        fileName.createNewFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                return fileName.toString();
+                
             }
-        return fileName.toString();
+            
+        }
+        return "/printout.pdf";//default name if any of the aboce cases not matching
+        
     }
     /**
      * This method creates patient fourth table
@@ -271,13 +351,8 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
      * @param document
      */
     private void addEnofText(Document document) {
-        PdfPTable table = new PdfPTable(1);
-        table.setWidthPercentage(50f);
-        table.setHorizontalAlignment(Element.ALIGN_LEFT);
-        table.addCell(getItalicPDFCell(Constants.PREFERABLE_PRESCRIBE));
         
         try {
-            document.add(table);
             Paragraph para = new Paragraph();
             para.add(new Chunk(Constants.LIFE_STYLE_MODIFICATIONS, font8Bold));
             para.add(new Chunk(Constants.AS_ADVISED, font8Normal));
@@ -300,6 +375,10 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
 
         table.addCell(getPDFCell(mBundle.getString(Constants.DRUG_PAN)));
         table.addCell(getPDFCell(""));
+        
+        PdfPCell italicCell = getItalicPDFCell(Constants.PREFERABLE_PRESCRIBE);
+        italicCell.setColspan(2);
+        table.addCell(italicCell);
         //In future this might be useful, if we split the string
 
 //        table.addCell(getPDFCell("Atorvastatin (20 mg)\nRosuvastatin (10 mg) "));
@@ -424,10 +503,11 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
 
             table.addCell(getPDFCell(Constants.PATIENT_ID_TEXT+mBundle.getString(Constants.PATIENT_ID)
                     +"\n"+Constants.PHONE_TEXT+mBundle.getString(Constants.PHONE)));
-
-            table.addCell(getPDFCell(Constants.DIAGNOSIS_TEXT+mBundle.getString(Constants.DIAGNOSIS)));
-            table.addCell("");
-            table.addCell("");
+            PdfPCell diagnosisPdfCell = getPDFCell(Constants.DIAGNOSIS_TEXT+mBundle.getString(Constants.DIAGNOSIS));
+            diagnosisPdfCell.setColspan(3);
+            table.addCell(diagnosisPdfCell);
+//            table.addCell("");
+//            table.addCell("");
 
             document.add(table);
 
@@ -492,7 +572,6 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
      */
     private PdfPCell getItalicPDFCell(String data){
         PdfPCell c1 = new PdfPCell(new Phrase(data == null?" ":data,font8Italic));
-        c1.setBorder(0);
         c1.setPaddingLeft(10);
         c1.setPaddingRight(10);
         c1.setPaddingTop(5);

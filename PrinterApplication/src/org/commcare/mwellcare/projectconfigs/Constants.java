@@ -103,5 +103,7 @@ public class Constants {
     public static final String PHONE_TEXT = "Phone: ";
     public static final String DIAGNOSIS_TEXT = "Diagnosis: ";
     public static final String DIAGNOSIS = "diagnosis";
+    public static final String PDF_CONFIGURATION = "pdf_configuration";
+    public static final String PDF_PATH = "PDF_PATH";
 
 }

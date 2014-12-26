@@ -19,18 +19,18 @@
             android:name=".PrintPDFActivity"
             android:screenOrientation="portrait"
             android:label="@string/app_name" >
-            <!-- <intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter> -->
+            </intent-filter>
             
-            
+            <!-- 
             <intent-filter>
                 <action android:name="org.commcare.mwellcare.PrintPDFActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+            </intent-filter> -->
            
         </activity>
 

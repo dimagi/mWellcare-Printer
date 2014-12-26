@@ -13,12 +13,16 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.commcare.mwellcare.components.CustomDialog;
 import org.commcare.mwellcare.projectconfigs.Constants;
+import org.commcare.mwellcare.util.Util;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Environment;
@@ -38,17 +42,22 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
     private Activity mActivity ;
     private final String TAG = this.getClass().getName();
     public static final String ODK_INTENT_DATA = "odk_intent_data";
-    private CustomDialog mDialog;
+    public static final long MAXTIME_FOR_PRINT_WAIT = 120;//in sec 
+    public static final int PRINT_SUCCESS  = 1;
+    public static final int PRINT_FAILED  = 0;
+    private ProgressDialog mDialog;
     private CustomTimerTask mTimerTask;
+    private Timer mTimer;
+    private Resources mResources;
     
     public PdfPrintDocumentAdapter(Activity activity) {
         this.mActivity = activity;
-        mDialog = new CustomDialog(mActivity);
+        mResources = activity.getResources();
+       
     }
     @Override
     public void onStart() {
         super.onStart();
-        Intent intent = mActivity.getIntent();
     }
 
     @Override
@@ -81,11 +90,20 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
             CancellationSignal cancellationSignal, WriteResultCallback callback) {
         InputStream input = null;
         OutputStream output = null;
+        String filePath = null;
 
         try {
             Bundle bundle = mActivity.getIntent().getExtras();
-            String filePath = Environment.getExternalStorageDirectory()+"/MWellCare/"+
-                    bundle.getString(Constants.PATIENT_ID)+"_"+bundle.getString(Constants.PATIENT_NAME)+".pdf";
+            String pdfPath = Util.getPdfNameFromSP(mActivity);
+            
+            if(pdfPath == null){//taking the pdf from default folder
+                filePath = Environment.getExternalStorageDirectory()+"/MWellCare/"+
+                        bundle.getString(Constants.PATIENT_ID)+"_"+bundle.getString(Constants.PATIENT_NAME)+".pdf";
+            }else{
+                filePath = Environment.getExternalStorageDirectory()+"/MWellCare"+pdfPath;
+                        
+            }
+           
             if(Constants.LOG)Log.d(TAG, "File Path is::"+filePath);
 
             input = new FileInputStream(filePath);
@@ -121,8 +139,17 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
         PrintManager printManager = (PrintManager) mActivity
                 .getSystemService(Context.PRINT_SERVICE);
         List<PrintJob> printJobs = printManager.getPrintJobs();
+//        Toast.makeText(mActivity, printJobs.size()+"Total print jobs", Toast.LENGTH_SHORT).show();
+        if(!printJobs.isEmpty()){
+            PrintJob job = printJobs.get(printJobs.size()-1);
+            mTimer = new Timer();
+            mTimerTask = new CustomTimerTask(job);
+            mTimer.scheduleAtFixedRate(mTimerTask, 0, 2000);
+        }
+       
         
-        if(Constants.LOG)Log.d(TAG,"Total Jobs::"+printJobs.size());
+        
+       /* if(Constants.LOG)Log.d(TAG,"Total Jobs::"+printJobs.size());
         String PatientID = mActivity.getIntent().getExtras().getString(Constants.PATIENT_ID);
         for(int i = 0;i<printJobs.size();i++){
             PrintJob job = printJobs.get(i);
@@ -138,12 +165,16 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
                     job.cancel();
                 }
             }
-        }
+        }*/
     }
     private class CustomTimerTask extends TimerTask{
         private PrintJob job;
+        private long mTimeLimit = 2;
         public CustomTimerTask(PrintJob job) {
             this.job = job;
+            mDialog = new ProgressDialog(mActivity);
+            mDialog.setTitle(mResources.getString(R.string.waiting_for_printer));
+            mDialog.show();
         }
         @Override
         public void run() {
@@ -151,48 +182,67 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
                 
                 @Override
                 public void run() {
+                    mTimeLimit += 2;
                     if(job.isQueued()){
                         if(!mDialog.isShowing())
                             mDialog.show();
-                        mDialog.setText(job.getInfo().getLabel()+"PrintJob Queued...");
-//                        Toast.makeText(mActivity, job.getInfo().getLabel()+" PrintJob Queued...", Toast.LENGTH_SHORT).show();
+                        mDialog.setTitle(mResources.getString(R.string.printjob_queed));
                     }else if(job.isStarted()){
                         if(!mDialog.isShowing())
                             mDialog.show();
-                        mDialog.setText(job.getInfo().getLabel()+"PrintJob Started...");
-//                        Toast.makeText(mActivity, job.getInfo().getLabel()+" PrintJob Started...", Toast.LENGTH_SHORT).show();
+                        mDialog.setTitle(mResources.getString(R.string.printjob_started));
                     }else if(job.isBlocked()){
-                      mDialog.setText(job.getInfo().getLabel()+"PrintJob Blocked and restarting...");
-//                      Toast.makeText(mActivity, job.getInfo().getLabel()+" PrintJob Blocked and restarting...", Toast.LENGTH_SHORT).show();
+                      mDialog.setTitle(mResources.getString(R.string.printjob_blocked));
                       job.restart();
                     }else if(job.isFailed()){
-                        mDialog.setText(job.getInfo().getLabel()+"PrintJob failed and restarting...");
-//                        Toast.makeText(mActivity, job.getInfo().getLabel()+" PrintJob failed and restarting...", Toast.LENGTH_SHORT).show();
+                        mDialog.setTitle(mResources.getString(R.string.printjob_fialed));
                         job.restart();
                     }else if(job.isCompleted()){
                         job.cancel();
-//                        mDialog.setText("PrintJob Completed...");
-                        Toast.makeText(mActivity, job.getInfo().getLabel()+" Priting Completed", Toast.LENGTH_SHORT).show();
                         CustomTimerTask.this.cancel();
+                        mTimer.cancel();
+                        showAlert(mResources.getString(R.string.printing_done), PRINT_SUCCESS);
+                       
+                    }
+                    if(mTimeLimit == MAXTIME_FOR_PRINT_WAIT){
+                        job.cancel();
+                        CustomTimerTask.this.cancel();
+                        mTimer.cancel();
+                        showAlert(mResources.getString(R.string.problem_while_priting), PRINT_FAILED);
                         
-                        Intent intent = new Intent();
-                        mActivity.setResult(Activity.RESULT_OK, intent);
-                        intent.putExtra(ODK_INTENT_DATA, true);
-                        if(mDialog.isShowing())    
-                            mDialog.dismiss();
-                        mActivity.finish();
-                    }/*else if(mDialog.getDialogText().equals("")){
-                        CustomTimerTask.this.cancel();
-                        Intent intent = new Intent();
-                        mActivity.setResult(Activity.RESULT_OK, intent);
-                        intent.putExtra(ODK_INTENT_DATA, false);
-                        if(mDialog.isShowing())    
-                            mDialog.dismiss();
-                        mActivity.finish();
-                    }*/
+                    }
                 }
             });
         }
+    }
+    /**
+     * Show the alert in the specified activity and message
+     * @param CTX Context object
+     * @param MSG String message that should be shown on the alert
+     */
+    public void showAlert(String msg, final int status){
+        AlertDialog.Builder alert=new AlertDialog.Builder(mActivity);
+        alert.setTitle(msg);
+//        alert.setMessage("");
+        alert.setCancelable(false);
+        alert.setPositiveButton(mActivity.getResources().getString(R.string.ok), new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog1, int which) {
+                Intent intent = new Intent();
+                mActivity.setResult(Activity.RESULT_OK, intent);
+               
+                if(mDialog.isShowing())    
+                    mDialog.dismiss();
+               
+                if(status == PRINT_SUCCESS){
+                    intent.putExtra(ODK_INTENT_DATA, true);
+                    
+                }else if(status == PRINT_FAILED){
+                    intent.putExtra(ODK_INTENT_DATA, false);
+                }
+                mActivity.finish();
+            }
+        });
+        alert.show();
     }
     /**
      * This cancels the all print jobs currently irrespective of 
@@ -201,18 +251,13 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
     public void cancelTimer() {
         if(mTimerTask!=null){
             mTimerTask.cancel();
-            if(mDialog.isShowing())    
+            mTimer.cancel();
+            if(mDialog!=null && mDialog.isShowing())    
                 mDialog.dismiss();
-            PrintManager printManager = (PrintManager) mActivity
-                    .getSystemService(Context.PRINT_SERVICE);
-            List<PrintJob> printJobs = printManager.getPrintJobs();
-            String PatientID = mActivity.getIntent().getExtras().getString(Constants.PATIENT_ID);
-            for(int i = 0;i<printJobs.size();i++){
-                PrintJob job = printJobs.get(i);
-                if(!job.isCompleted()){
-                    job.cancel();
-                }
-            }
+            Intent intent = new Intent();
+            mActivity.setResult(Activity.RESULT_OK, intent);
+            intent.putExtra(ODK_INTENT_DATA, false);
+            mActivity.finish();
         }
         
     } 
