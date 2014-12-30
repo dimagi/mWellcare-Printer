@@ -100,7 +100,8 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
                 filePath = Environment.getExternalStorageDirectory()+"/MWellCare/"+
                         bundle.getString(Constants.PATIENT_ID)+"_"+bundle.getString(Constants.PATIENT_NAME)+".pdf";
             }else{
-                filePath = Environment.getExternalStorageDirectory()+"/MWellCare"+pdfPath;
+                filePath = pdfPath+"/"+bundle.getString(Constants.PATIENT_ID)
+                        +"_"+bundle.getString(Constants.PATIENT_NAME)+".pdf";
                         
             }
            

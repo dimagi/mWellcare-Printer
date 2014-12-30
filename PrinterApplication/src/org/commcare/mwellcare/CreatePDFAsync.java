@@ -217,10 +217,12 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
                         }
                     return fileName.toString();
                 }*/
-                File mWellDir = new File(Environment.getExternalStorageDirectory()+"/MWellCare");
-                if(!mWellDir.isDirectory())
-                    mWellDir.mkdir();
-                File fileName = new File(mWellDir, pdfPath);
+                String pdfPathString = Util.getPdfNameFromSP(mActivity);
+                File pdfPathFile = new File(pdfPathString);
+                if(!pdfPathFile.isDirectory())
+                    pdfPathFile.mkdir();
+                File fileName = new File(pdfPathFile, mBundle.getString(Constants.PATIENT_ID)+"_"+
+                        mBundle.getString(Constants.PATIENT_NAME)+".pdf");
                 if(!fileName.exists())
                     try {
                         fileName.createNewFile();

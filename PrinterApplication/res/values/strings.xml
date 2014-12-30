@@ -8,7 +8,7 @@
     <string name="printing_completed">Printing completed</string>
     <string name="error_while_printing">There is an error while printing. Please try again</string>
     <string name="printer_app_didnot_recieve_date">Data not received from CommCare ODK to print</string>
-    <string name="not_configured_pdf_name">You have not configured PDF name. Please click the below button to configure.</string>
+    <string name="not_configured_pdf_name">Click here to browse PDF path</string>
     <string name="configure_pdf_name">Configure PDF name</string>
     
 	<string name="pdf_path">Pdf path</string>

@@ -23,14 +23,19 @@ public class PrintPDFActivity extends Activity implements OnClickListener{
 
     private final String TAG = this.getClass().getName();
     private TextView mPDFConfigStatus;
+    private Activity mActivity;
     private Button mConfigPDFBtn;
     private LinearLayout mMainLayout;
     private CreatePDFAsync mPdfAsync;
     private static final String PRINTOUT_ACTION = "org.commcare.mwellcare.PRINTOUT_ACTION";
+    public static final int PDF_PATH_REQUEST_CODE = 201;
+    public static final String FILE_PATH = "FILE_PATH";
+   
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mActivity = this;
         initUI();
         String action = getIntent().getAction();
         
@@ -51,8 +56,7 @@ public class PrintPDFActivity extends Activity implements OnClickListener{
             mMainLayout.setVisibility(View.VISIBLE);
             String pdfPath = Util.getPdfNameFromSP(this);
             if(pdfPath !=null){
-                mPDFConfigStatus.setText(getResources().getString(R.string.pdf_configuration_path_is)+"/MwellCare"+pdfPath+". "+
-                        getResources().getString(R.string.if_you_want_change_pdf));
+                mPDFConfigStatus.setText(pdfPath);
             }
         }
     }
@@ -62,15 +66,27 @@ public class PrintPDFActivity extends Activity implements OnClickListener{
     private void initUI() {
         mMainLayout = (LinearLayout)findViewById(R.id.ll_main_layout);
         mPDFConfigStatus = (TextView)findViewById(R.id.tv_pdf_conf_description);
-        mConfigPDFBtn = (Button)findViewById(R.id.btn_configure_pdf_name);
-        mConfigPDFBtn.setOnClickListener(this);
+        mPDFConfigStatus.setOnClickListener(this);
+//        mConfigPDFBtn = (Button)findViewById(R.id.btn_configure_pdf_name);
+//        mConfigPDFBtn.setOnClickListener(this);
     }
     @Override
     public void onClick(View v) {
-        if(v.getId() == R.id.btn_configure_pdf_name){
-            new PdfConfigurationDialog(PrintPDFActivity.this, mPDFConfigStatus).show();
+        if(v.getId() == R.id.tv_pdf_conf_description){
+//            new PdfConfigurationDialog(PrintPDFActivity.this, mPDFConfigStatus).show();
+            Intent intent = new Intent(PrintPDFActivity.this, PdfPathConfigurationActivity.class);
+            startActivityForResult(intent, PDF_PATH_REQUEST_CODE);
         }
         
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == PDF_PATH_REQUEST_CODE && data!=null){
+            Util.savePdfNameInSP(mActivity, data.getStringExtra(FILE_PATH));
+            mPDFConfigStatus.setText(data.getStringExtra(FILE_PATH));
+            
+        }
     }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {

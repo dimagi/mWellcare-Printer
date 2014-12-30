@@ -8,16 +8,16 @@
         android:id="@+id/tv_pdf_conf_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="5dp"
+        android:padding="10dp"
         android:text="@string/not_configured_pdf_name"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <Button
+   <!--  <Button
         android:id="@+id/btn_configure_pdf_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
-        android:text="@string/configure_pdf_name" />
+        android:text="@string/configure_pdf_name" /> -->
 
 </LinearLayout>

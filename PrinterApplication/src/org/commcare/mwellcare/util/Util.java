@@ -1,12 +1,12 @@
 package org.commcare.mwellcare.util;
 
+import org.commcare.mwellcare.R;
 import org.commcare.mwellcare.projectconfigs.Constants;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 
 public class Util {
@@ -39,10 +39,10 @@ public class Util {
      */
     public static void showAlert(Context ctx, String msg){
         final AlertDialog.Builder alert=new AlertDialog.Builder(ctx);
-        alert.setTitle("Alert");
+        alert.setTitle(ctx.getResources().getString(R.string.alert));
         alert.setMessage(msg);
         alert.setCancelable(false);
-        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener(){
+        alert.setPositiveButton(ctx.getResources().getString(R.string.ok), new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog1, int which) {
             }
         });
