@@ -105,5 +105,6 @@ public class Constants {
     public static final String DIAGNOSIS = "diagnosis";
     public static final String PDF_CONFIGURATION = "pdf_configuration";
     public static final String PDF_PATH = "PDF_PATH";
+    public static final String PRINTJOB_ID = "PRINTJOB_ID";
 
 }

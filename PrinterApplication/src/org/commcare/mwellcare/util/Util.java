@@ -32,6 +32,29 @@ public class Util {
 
         editor.commit();
     }
+    
+    
+    /**
+     * This method is used to save printjobID path {@link SharedPreferences}.
+     * @param activity {@link Activity}
+     * @param printjobid
+     */
+    public static void saveUniquePrintJobIDSP(Context ctx, long printjobID){
+        SharedPreferences preferences = ctx.getSharedPreferences(Constants.PDF_CONFIGURATION, android.content.Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putLong(Constants.PRINTJOB_ID, printjobID);
+
+        editor.commit();
+    }
+    /**
+     * This method is get printjobid {@link SharedPreferences}.
+     * @param activity {@link Activity}
+     * @return printjobid
+     */
+    public static long getUniquePrintJobIDFromSP(Context ctx) {
+        SharedPreferences preferences = ctx.getSharedPreferences(Constants.PDF_CONFIGURATION, android.content.Context.MODE_PRIVATE);
+        return preferences.getLong(Constants.PRINTJOB_ID, 0);
+    }
     /**
      * Show the alert in the specified activity and message
      * @param CTX Context object

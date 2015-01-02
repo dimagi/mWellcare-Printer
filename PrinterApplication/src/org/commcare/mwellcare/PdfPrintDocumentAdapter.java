@@ -97,7 +97,7 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
             String pdfPath = Util.getPdfNameFromSP(mActivity);
             
             if(pdfPath == null){//taking the pdf from default folder
-                filePath = Environment.getExternalStorageDirectory()+"/MWellCare/"+
+                filePath = Environment.getExternalStorageDirectory()+"/"+
                         bundle.getString(Constants.PATIENT_ID)+"_"+bundle.getString(Constants.PATIENT_NAME)+".pdf";
             }else{
                 filePath = pdfPath+"/"+bundle.getString(Constants.PATIENT_ID)
@@ -141,32 +141,28 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
                 .getSystemService(Context.PRINT_SERVICE);
         List<PrintJob> printJobs = printManager.getPrintJobs();
 //        Toast.makeText(mActivity, printJobs.size()+"Total print jobs", Toast.LENGTH_SHORT).show();
-        if(!printJobs.isEmpty()){
+        /*if(!printJobs.isEmpty()){
             PrintJob job = printJobs.get(printJobs.size()-1);
             mTimer = new Timer();
             mTimerTask = new CustomTimerTask(job);
             mTimer.scheduleAtFixedRate(mTimerTask, 0, 2000);
-        }
-       
+        }*/
         
-        
-       /* if(Constants.LOG)Log.d(TAG,"Total Jobs::"+printJobs.size());
+        if(Constants.LOG)Log.d(TAG,"Total Jobs::"+printJobs.size());
         String PatientID = mActivity.getIntent().getExtras().getString(Constants.PATIENT_ID);
+        long printJobUniueID = Util.getUniquePrintJobIDFromSP(mActivity);
         for(int i = 0;i<printJobs.size();i++){
             PrintJob job = printJobs.get(i);
-            if(job.getInfo().getLabel().equals(PatientID)){
-                if(!job.isCompleted()){
-//                    Toast.makeText(mActivity, i+"::"+job.isQueued(), Toast.LENGTH_SHORT).show();
-                    if(!mDialog.isShowing())
-                        mDialog.show();
-                    Timer t = new Timer();
+            if(job.getInfo().getLabel().equals(PatientID+"_"+printJobUniueID)){
+                    printJobUniueID++;//for internal purpose only
+                    Util.saveUniquePrintJobIDSP(mActivity, printJobUniueID);
+                    
+                    mTimer = new Timer();
                     mTimerTask = new CustomTimerTask(job);
-                    t.scheduleAtFixedRate(mTimerTask, 0, 2000);
-                }else{
-                    job.cancel();
-                }
+                    mTimer.scheduleAtFixedRate(mTimerTask, 0, 2000);
+                    break;
             }
-        }*/
+        }
     }
     private class CustomTimerTask extends TimerTask{
         private PrintJob job;
@@ -174,7 +170,6 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
         public CustomTimerTask(PrintJob job) {
             this.job = job;
             mDialog = new ProgressDialog(mActivity);
-            mDialog.setTitle(mResources.getString(R.string.waiting_for_printer));
             mDialog.show();
         }
         @Override

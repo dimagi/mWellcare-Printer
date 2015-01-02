@@ -68,7 +68,7 @@ public class PdfPathConfigurationActivity extends Activity implements OnClickLis
         if(v.getId() == R.id.btn_done){
             Intent intent = new Intent();
             setResult(Activity.RESULT_OK, intent);
-            intent.putExtra(PrintPDFActivity.FILE_PATH, mFilePath);
+            intent.putExtra(PdfPathMainActivity.FILE_PATH, mFilePath);
             finish();
             
         }

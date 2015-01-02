@@ -42,24 +42,6 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
     private Bundle mBundle;
     private CustomDialog mCustomDialog;
     private PdfPrintDocumentAdapter mPdfAdapter;
-    //This might be useful in future, if the font is changed to TIMES_ROMAN
-//    private static Font catFont = new Font(Font.FontFamily.TIMES_ROMAN, 18,
-//            Font.BOLD);
-//    private static Font redFont = new Font(Font.FontFamily.TIMES_ROMAN, 12,
-//            Font.NORMAL, BaseColor.RED);
-//    private static Font subFont = new Font(Font.FontFamily.TIMES_ROMAN, 16,
-//            Font.BOLD);
-//    private static Font font12Normal = new Font(Font.FontFamily.TIMES_ROMAN, 12,
-//            Font.NORMAL);
-//    private static Font font8Normal = new Font(Font.FontFamily.TIMES_ROMAN, 8,
-//            Font.NORMAL);
-//    private static Font font6Normal = new Font(Font.FontFamily.TIMES_ROMAN, 6,
-//            Font.NORMAL);
-//    private static Font font10Normal = new Font(Font.FontFamily.TIMES_ROMAN, 10,
-//            Font.NORMAL);
-//    public static final Font BOLD_UNDERLINED =
-//            new Font(FontFamily.TIMES_ROMAN, 16, Font.BOLD | Font.UNDERLINE);
-    
     private Font font8Normal ;
     private Font font8Bold ;
     private Font font8BoldUnderline ;
@@ -69,7 +51,6 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
         mActivity = activity;
         mBundle = mActivity.getIntent().getExtras();
         initFonts();
-       
     }
     private void initFonts() {
         try {
@@ -110,7 +91,8 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
         // Start a print job, passing in a PrintDocumentAdapter implementation
         // to handle the generation of a print document
         mPdfAdapter = new PdfPrintDocumentAdapter(mActivity);
-        printManager.print(mBundle.getString(Constants.PATIENT_ID)!=null ? mBundle.getString(Constants.PATIENT_ID):jobName
+        printManager.print(mBundle.getString(Constants.PATIENT_ID)!=null ? mBundle.getString(Constants.PATIENT_ID)
+                +"_"+Util.getUniquePrintJobIDFromSP(mActivity):jobName
                 , mPdfAdapter, null);
         
     }
@@ -162,7 +144,7 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
                     rect.getLeft()+32, rect.getTop()+25, 0);
             ColumnText.showTextAligned(writer.getDirectContent(),
                     Element.ALIGN_CENTER, new Phrase("Date:"+currentDate, font8Normal),
-                    rect.getLeft()+50, rect.getTop()+12, 0);
+                    rect.getLeft()+45, rect.getTop()+12, 0);
             //Footer
             ColumnText.showTextAligned(writer.getDirectContent(),
                     Element.ALIGN_CENTER, new Phrase("www.mWellcare.org",font8Normal),
@@ -177,10 +159,8 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
     private String getPDFConfigurePath() {
         String pdfPath = Util.getPdfNameFromSP(mActivity);
         if(pdfPath == null){//default case
-            File mWellDir = new File(Environment.getExternalStorageDirectory()+"/MWellCare");
-            if(!mWellDir.isDirectory())
-                mWellDir.mkdir();
-            File fileName = new File(mWellDir, mBundle.getString(Constants.PATIENT_ID)+"_"+
+            File fileName = new File(Environment.getExternalStorageDirectory(),
+                    mBundle.getString(Constants.PATIENT_ID)+"_"+
                     mBundle.getString(Constants.PATIENT_NAME)+".pdf");
             if(!fileName.exists())
                 try {
@@ -192,36 +172,7 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
         }else{//create user configured path
             
             if(pdfPath.contains("/")){
-                //This will be useful if the file Name needs to add directory
-               /* String directoryName = pdfPath.substring(0, pdfPath.lastIndexOf("/")+1);
-                String fileNameString = pdfPath.substring( pdfPath.lastIndexOf("/")+1 ,pdfPath.length());
-                if(directoryName.length()>1){
-                    File directoryFile = new File(Environment.getExternalStorageDirectory()+directoryName);
-                    if(!directoryFile.isDirectory())
-                        directoryFile.mkdirs();
-                    File fileName = new File(directoryName, fileNameString);
-                    if(!fileName.exists())
-                        try {
-                            fileName.createNewFile();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    return fileName.toString();
-                }else{
-                    File fileName = new File(Environment.getExternalStorageDirectory()+fileNameString);
-                    if(!fileName.exists())
-                        try {
-                            fileName.createNewFile();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    return fileName.toString();
-                }*/
-                String pdfPathString = Util.getPdfNameFromSP(mActivity);
-                File pdfPathFile = new File(pdfPathString);
-                if(!pdfPathFile.isDirectory())
-                    pdfPathFile.mkdir();
-                File fileName = new File(pdfPathFile, mBundle.getString(Constants.PATIENT_ID)+"_"+
+                File fileName = new File(pdfPath, mBundle.getString(Constants.PATIENT_ID)+"_"+
                         mBundle.getString(Constants.PATIENT_NAME)+".pdf");
                 if(!fileName.exists())
                     try {
@@ -501,10 +452,10 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
             
             table.addCell(getpatinetNameAddressPDFCell(mBundle.getString(Constants.PATIENT_NAME), mBundle.getString(Constants.ADDRESS)));
 
-            table.addCell(getPDFCell(mBundle.getString(Constants.GENDER)+"\n"+mBundle.getString(Constants.AGE)));
+            table.addCell(getPDFCell(mBundle.getString(Constants.GENDER)+"\n\n"+mBundle.getString(Constants.AGE)));
 
             table.addCell(getPDFCell(Constants.PATIENT_ID_TEXT+mBundle.getString(Constants.PATIENT_ID)
-                    +"\n"+Constants.PHONE_TEXT+mBundle.getString(Constants.PHONE)));
+                    +"\n\n"+Constants.PHONE_TEXT+mBundle.getString(Constants.PHONE)));
             PdfPCell diagnosisPdfCell = getPDFCell(Constants.DIAGNOSIS_TEXT+mBundle.getString(Constants.DIAGNOSIS));
             diagnosisPdfCell.setColspan(3);
             table.addCell(diagnosisPdfCell);
