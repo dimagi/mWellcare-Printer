@@ -140,13 +140,6 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
         PrintManager printManager = (PrintManager) mActivity
                 .getSystemService(Context.PRINT_SERVICE);
         List<PrintJob> printJobs = printManager.getPrintJobs();
-//        Toast.makeText(mActivity, printJobs.size()+"Total print jobs", Toast.LENGTH_SHORT).show();
-        /*if(!printJobs.isEmpty()){
-            PrintJob job = printJobs.get(printJobs.size()-1);
-            mTimer = new Timer();
-            mTimerTask = new CustomTimerTask(job);
-            mTimer.scheduleAtFixedRate(mTimerTask, 0, 2000);
-        }*/
         
         if(Constants.LOG)Log.d(TAG,"Total Jobs::"+printJobs.size());
         String PatientID = mActivity.getIntent().getExtras().getString(Constants.PATIENT_ID);
@@ -164,6 +157,11 @@ public class PdfPrintDocumentAdapter extends PrintDocumentAdapter{
             }
         }
     }
+    /**
+     * This class will give the printjob result
+     * @author rreddy.avula
+     *
+     */
     private class CustomTimerTask extends TimerTask{
         private PrintJob job;
         private long mTimeLimit = 2;

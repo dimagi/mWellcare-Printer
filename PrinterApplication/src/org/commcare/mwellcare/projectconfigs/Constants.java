@@ -2,7 +2,7 @@ package org.commcare.mwellcare.projectconfigs;
 
 public class Constants {
 
-    public static final boolean LOG = true;
+    public static final boolean LOG = false;
     public static final String PATIENT_ID = "patient_id";
     public static final String PATIENT_NAME = "name";
     public static final String DATE = "Date";
@@ -106,5 +106,6 @@ public class Constants {
     public static final String PDF_CONFIGURATION = "pdf_configuration";
     public static final String PDF_PATH = "PDF_PATH";
     public static final String PRINTJOB_ID = "PRINTJOB_ID";
+    public static final String SITE_COMMCARE = "www.mWellcare.org";
 
 }

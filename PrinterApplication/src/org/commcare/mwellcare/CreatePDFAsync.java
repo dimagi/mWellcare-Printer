@@ -129,6 +129,8 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
         
     }
     private class HeaderFooter extends PdfPageEventHelper {
+        private static final String HEADER_DATE = "dd MMMM yyyy";
+
         /**
          * Adds the header and the footer.
          * @see com.itextpdf.text.pdf.PdfPageEventHelper#onEndPage(
@@ -137,7 +139,7 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
         public void onEndPage(PdfWriter writer, Document document) {
             Rectangle rect = writer.getBoxSize("art");
             //header
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+            SimpleDateFormat sdf = new SimpleDateFormat(HEADER_DATE);
             String currentDate = sdf.format(new Date());
             ColumnText.showTextAligned(writer.getDirectContent(),
                     Element.ALIGN_CENTER, new Phrase("CHC:Gownipalli", font8Normal),
@@ -147,7 +149,7 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
                     rect.getLeft()+45, rect.getTop()+12, 0);
             //Footer
             ColumnText.showTextAligned(writer.getDirectContent(),
-                    Element.ALIGN_CENTER, new Phrase("www.mWellcare.org",font8Normal),
+                    Element.ALIGN_CENTER, new Phrase(Constants.SITE_COMMCARE,font8Normal),
                     (rect.getLeft() + rect.getRight()) / 2, rect.getBottom()-5, 0);
         }
     }
@@ -480,7 +482,6 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
         para.add(new Chunk(name == null?" ":name,font8Bold));
         para.add(new Chunk("\n\n"+(address == null?" ":address),font8Normal));
         PdfPCell c1 = new PdfPCell(para);
-//        c1.setLeading(0f, 2f);
         c1.setHorizontalAlignment(Element.ALIGN_LEFT);
         c1.setPaddingLeft(10);
         c1.setPaddingRight(10);
@@ -495,7 +496,6 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
      */
     private PdfPCell getPDFCell(String data){
         PdfPCell c1 = new PdfPCell(new Phrase(data == null?" ":data ,font8Normal));
-//        c1.setLeading(0f, 2f);
         c1.setHorizontalAlignment(Element.ALIGN_LEFT);
         c1.setPaddingLeft(10);
         c1.setPaddingRight(10);
@@ -510,7 +510,6 @@ public class CreatePDFAsync extends AsyncTask<Void, Void, Void>{
      */
     private PdfPCell getBoldPDFCell(String data){
         PdfPCell c1 = new PdfPCell(new Phrase(data == null?" ":data,font8Bold));
-//        c1.setLeading(0f, 2f);
         c1.setHorizontalAlignment(Element.ALIGN_LEFT);
         c1.setPaddingLeft(10);
         c1.setPaddingRight(10);

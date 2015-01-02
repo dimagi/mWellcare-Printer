@@ -3,6 +3,8 @@ package org.commcare.mwellcare.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.commcare.mwellcare.projectconfigs.Constants;
+
 import android.print.PrintAttributes;
 import android.print.PrintAttributes.Margins;
 import android.print.PrintAttributes.MediaSize;
@@ -25,48 +27,48 @@ public class CustomPrintService extends PrintService {
 
     @Override
     protected void onRequestCancelPrintJob(PrintJob printJob) {
-        Log.d(TAG,"onRequestCancelPrintJob");
+        if(Constants.LOG)Log.d(TAG,"onRequestCancelPrintJob");
 
     }
 
     @Override
     protected void onPrintJobQueued(PrintJob printJob) {
-        Log.d(TAG,"onPrintJobQueued");
+        if(Constants.LOG)Log.d(TAG,"onPrintJobQueued");
 
     }
     @Override
     protected void onConnected() {
-        Log.d(TAG,"onRequestCancelPrintJob");
+        if(Constants.LOG)Log.d(TAG,"onRequestCancelPrintJob");
         
     };
     @Override
     protected void onDisconnected() {
-        Log.d(TAG,"onRequestCancelPrintJob");
+        if(Constants.LOG)Log.d(TAG,"onRequestCancelPrintJob");
         
     };
     PrinterDiscoverySession abc = new PrinterDiscoverySession() {
 
         @Override
         public void onValidatePrinters(List<PrinterId> printerIds) {
-            Log.d(TAG,"onValidatePrinters");
+            if(Constants.LOG)Log.d(TAG,"onValidatePrinters");
 
         }
 
         @Override
         public void onStopPrinterStateTracking(PrinterId printerId) {
-            Log.d(TAG,"onStopPrinterStateTracking");
+            if(Constants.LOG)Log.d(TAG,"onStopPrinterStateTracking");
 
         }
 
         @Override
         public void onStopPrinterDiscovery() {
-            Log.d(TAG,"onStopPrinterDiscovery");
+            if(Constants.LOG)Log.d(TAG,"onStopPrinterDiscovery");
 
         }
 
         @Override
         public void onStartPrinterStateTracking(PrinterId printerId) {
-            Log.d(TAG,"onStartPrinterStateTracking");
+            if(Constants.LOG)Log.d(TAG,"onStartPrinterStateTracking");
 
         }
 
@@ -117,7 +119,7 @@ public class CustomPrintService extends PrintService {
 
         @Override
         public void onDestroy() {
-            Log.d(TAG,"onDestroy");
+            if(Constants.LOG)Log.d(TAG,"onDestroy");
 //            List<PrinterId> dd = new ArrayList<PrinterId>();
 //            dd.add(generatePrinterId("Printer 1"));
 //            removePrinters(dd);
